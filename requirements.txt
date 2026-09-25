@@ -2,7 +2,8 @@
 tensorflow>=2.13,<2.17
 
 # Simulator interface only (NOT DonkeyCar's training code).
-gym-donkeycar>=1.2.0
+# PyPI's latest is 1.0.13 (there is no 1.2.0), so pin to that floor.
+gym-donkeycar>=1.0.13
 
 # gym-donkeycar targets the classic Gym API. Pinning avoids the gymnasium API break.
 gym>=0.21,<0.26
