@@ -10,8 +10,9 @@ venv/
 env/
 
 # Recorded driving data and trained models (can be large — keep out of git)
-data/
-models/
+# Anchored to repo root so they don't match the src/data source package.
+/data/
+/models/
 
 # Downloaded simulator binaries
 sim/binaries/
