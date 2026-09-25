@@ -1,0 +1,75 @@
+# src/data/collect.py — teleop capture. Record BEFORE stepping (causality).
+import csv
+import json
+import time
+from datetime import datetime
+from pathlib import Path
+import cv2
+import config
+
+
+def collectRun(env, driver, dataDir, meta, maxSteps=None) -> Path:
+	config.setSeed()
+	dataDir = Path(dataDir)
+	runName = "run_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+	runDir = dataDir / runName
+	imgsDir = runDir / "imgs"
+	imgsDir.mkdir(parents=True, exist_ok=True)
+
+	obs = env.reset()
+	frame = 0
+	period = 1.0 / config.FPS_TARGET
+	csvPath = runDir / "records.csv"
+	with open(csvPath, "w", newline="") as f:
+		writer = csv.writer(f)
+		writer.writerow(["frame", "image", "steering", "throttle",
+		                 "timestamp", "speed", "cte"])
+		steps = 0
+		while True:
+			reading = driver.poll(period)
+			if reading.quit:
+				break
+			if reading.recording:
+				# obs is the frame the human is reacting to -> pair with this action.
+				rel = f"imgs/{frame:06d}.jpg"
+				cv2.imwrite(str(runDir / rel), obs)
+				writer.writerow([frame, rel, reading.steering, reading.throttle,
+				                 time.time(), "", ""])
+				frame += 1
+			obs, _, done, info = env.step([reading.steering, reading.throttle])
+			steps += 1
+			if done or (maxSteps is not None and steps >= maxSteps):
+				break
+
+	metaOut = {
+	    "track": meta.get("track", ""),
+	    "date": datetime.now().isoformat(),
+	    "controller_name": meta.get("controller_name", ""),
+	    "image_h": config.IMAGE_H,
+	    "image_w": config.IMAGE_W,
+	    "fps_target": config.FPS_TARGET,
+	    "frame_count": frame,
+	    "notes": meta.get("notes", ""),
+	}
+	with open(runDir / "meta.json", "w") as f:
+		json.dump(metaOut, f, indent=2)
+	return runDir
+
+
+def main():
+	from src.sim.environment import SimEnvironment
+	from src.input.controller import makeDriver
+	env = SimEnvironment()
+	driver = makeDriver()
+	try:
+		runDir = collectRun(env, driver, config.DATA_DIR,
+		                    meta={"track": config.SIM_TRACK,
+		                          "controller_name": type(driver).__name__})
+		print(f"Saved run to {runDir}")
+	finally:
+		driver.close()
+		env.close()
+
+
+if __name__ == "__main__":
+	main()
