@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Recorded driving data and trained models (can be large — keep out of git)
+data/
+models/
+
+# Downloaded simulator binaries
+sim/binaries/
+*.x86_64
+*.exe
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Superpowers execution scratch (ledger, briefs, review packages)
+.superpowers/

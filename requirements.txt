@@ -1,0 +1,21 @@
+# Core ML — the model + training are written by us; TF/Keras is just the framework.
+tensorflow>=2.13,<2.17
+
+# Simulator interface only (NOT DonkeyCar's training code).
+gym-donkeycar>=1.2.0
+
+# gym-donkeycar targets the classic Gym API. Pinning avoids the gymnasium API break.
+gym>=0.21,<0.26
+
+# Xbox controller / joystick input.
+pygame>=2.5
+
+# Image save/load + preprocessing.
+opencv-python>=4.8
+numpy>=1.23
+
+# Testing (optional but used by tests/).
+pytest>=7.4
+
+# NOTE: If `pip install` hits a dependency conflict (gym-donkeycar vs gym versions),
+# see README "Troubleshooting install". Python 3.10 or 3.11 is the safe range.
