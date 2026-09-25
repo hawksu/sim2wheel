@@ -31,8 +31,11 @@ def collectRun(env, driver, dataDir, meta, maxSteps=None) -> Path:
 				break
 			if reading.recording:
 				# obs is the frame the human is reacting to -> pair with this action.
+				# The sim yields RGB; cv2.imwrite expects BGR, so convert first.
+				# Otherwise training (tf.io.decode_jpeg, RGB) and drive (raw sim
+				# RGB) would see channel-swapped colors -> broken train/serve contract.
 				rel = f"imgs/{frame:06d}.jpg"
-				cv2.imwrite(str(runDir / rel), obs)
+				cv2.imwrite(str(runDir / rel), cv2.cvtColor(obs, cv2.COLOR_RGB2BGR))
 				writer.writerow([frame, rel, reading.steering, reading.throttle,
 				                 time.time(), "", ""])
 				frame += 1

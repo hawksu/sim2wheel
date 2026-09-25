@@ -11,7 +11,9 @@ def clampThrottle(throttle, maxThrottle=config.THROTTLE_MAX) -> float:
 def predictAction(model, obs):
 	x = preprocessImage(obs)                 # identical to training
 	x = tf.expand_dims(x, 0)
-	steering, throttle = model.predict(x, verbose=0)[0]
+	# Use model() not model.predict() for low-latency single-frame inference
+	# (NFR5): predict() retraces per call and lags the ~20 Hz drive loop.
+	steering, throttle = model(x, training=False).numpy()[0]
 	return float(steering), clampThrottle(throttle)
 
 
