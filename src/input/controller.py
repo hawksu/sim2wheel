@@ -39,11 +39,20 @@ class KeyboardDriver(InputDriver):
 			pygame.init()
 		# a tiny window is required for pygame to receive key events
 		self.screen = pygame.display.set_mode((320, 120))
-		pygame.display.set_caption("DonkeyCar teleop — arrows/WASD, r=record, q=quit")
 		self.steering = 0.0
 		self.throttle = 0.0
 		self.recording = False
 		self.quit = False
+		self._updateCaption()
+
+	def _updateCaption(self) -> None:
+		# Surface record state in the window title so it's obvious whether
+		# frames are being captured (0-frame runs are a common footgun).
+		if self.recording:
+			caption = "DonkeyCar teleop — ● REC — arrows/WASD, r=pause, q=quit"
+		else:
+			caption = "DonkeyCar teleop — paused — arrows/WASD, r=record, q=quit"
+		self.pygame.display.set_caption(caption)
 
 	def poll(self, dt: float) -> InputReading:
 		pg = self.pygame
@@ -53,6 +62,7 @@ class KeyboardDriver(InputDriver):
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_r:
 					self.recording = not self.recording
+					self._updateCaption()
 				elif event.key in (pg.K_q, pg.K_ESCAPE):
 					self.quit = True
 		keys = pg.key.get_pressed()

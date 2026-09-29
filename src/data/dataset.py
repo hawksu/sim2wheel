@@ -9,9 +9,23 @@ from src.data.preprocess import preprocessImage
 from src.data.augment import applyAugmentation
 
 
+def runHasFrames(runDir) -> bool:
+	# A run with only the CSV header (0 recorded frames) must not count as a
+	# run: it would poison the by-run split and surface as a confusing
+	# "zero-frame dataset" error later. Skip it here so a stray empty run is
+	# ignored and the clearer "need >= 2 runs" message can fire instead.
+	csvPath = Path(runDir) / "records.csv"
+	if not csvPath.exists():
+		return False
+	with open(csvPath, newline="") as f:
+		reader = csv.reader(f)
+		next(reader, None)          # header row
+		return next(reader, None) is not None
+
+
 def listRuns(dataDir) -> list:
 	dataDir = Path(dataDir)
-	runs = [p for p in sorted(dataDir.glob("run_*")) if (p / "records.csv").exists()]
+	runs = [p for p in sorted(dataDir.glob("run_*")) if runHasFrames(p)]
 	return runs
 
 

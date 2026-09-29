@@ -1,6 +1,7 @@
 # src/data/collect.py — teleop capture. Record BEFORE stepping (causality).
 import csv
 import json
+import shutil
 import time
 from datetime import datetime
 from pathlib import Path
@@ -44,6 +45,16 @@ def collectRun(env, driver, dataDir, meta, maxSteps=None) -> Path:
 			if done or (maxSteps is not None and steps >= maxSteps):
 				break
 
+	if frame == 0:
+		# No frames means recording was never toggled on. Fail loudly here
+		# instead of leaving an empty run that only breaks much later at
+		# train time ("zero-frame dataset"). Drop the empty run directory so
+		# it can't pollute the by-run train/val split.
+		print("\nWARNING: recorded 0 frames — nothing was captured.")
+		print("Press 'r' in the teleop window to start recording, then drive.")
+		shutil.rmtree(runDir, ignore_errors=True)
+		return None
+
 	metaOut = {
 	    "track": meta.get("track", ""),
 	    "date": datetime.now().isoformat(),
@@ -68,7 +79,10 @@ def main():
 		runDir = collectRun(env, driver, config.DATA_DIR,
 		                    meta={"track": config.SIM_TRACK,
 		                          "controller_name": type(driver).__name__})
-		print(f"Saved run to {runDir}")
+		if runDir is None:
+			print("No run saved (0 frames captured).")
+		else:
+			print(f"Saved run to {runDir}")
 	finally:
 		driver.close()
 		env.close()
