@@ -1,6 +1,8 @@
 # src/sim/environment.py — the ONLY module that talks to gym-donkeycar.
 import gym
-import gym_donkeycar  # noqa: F401  (registers the donkey envs)
+# gym-donkeycar 1.0.13 (PyPI latest) registers its envs only when this
+# submodule is imported; the top-level package __init__ is metadata-only.
+import gym_donkeycar.envs.donkey_env  # noqa: F401  (registers the donkey envs)
 import numpy as np
 import config
 

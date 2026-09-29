@@ -2,10 +2,15 @@
 tensorflow>=2.13,<2.17
 
 # Simulator interface only (NOT DonkeyCar's training code).
-# PyPI's latest is 1.0.13 (there is no 1.2.0), so pin to that floor.
-gym-donkeycar>=1.0.13
+# PyPI's latest (1.0.13) is an ANCIENT API: no conf= kwarg, no host/port,
+# and no env registration on `import gym_donkeycar` -> gym.make() NameNotFound.
+# v22.11.06 (== 1.3.0) is the last release on the classic Gym API this code
+# targets: it accepts conf={host,port}, registers on import, and step() returns
+# the 4-tuple (obs, reward, done, info). Newer tags migrated to gymnasium's
+# 5-tuple, which src/sim/environment.py does NOT use. Not on PyPI -> install by tag.
+gym-donkeycar @ git+https://github.com/tawnkramer/gym-donkeycar.git@v22.11.06
 
-# gym-donkeycar targets the classic Gym API. Pinning avoids the gymnasium API break.
+# gym-donkeycar v22.11.06 declares gym==0.21; 0.21 <= gym < 0.26 all work here.
 gym>=0.21,<0.26
 
 # Xbox controller / joystick input.
