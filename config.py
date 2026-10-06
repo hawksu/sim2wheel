@@ -24,8 +24,13 @@ METRICS_PATH = MODELS_DIR / "metrics.json"
 
 # --- Capture / control ---
 FPS_TARGET = 20
-THROTTLE_MAX = 0.5       # drive-time safety clamp on model throttle
-DEFAULT_THROTTLE = 0.35  # used if predicting steering-only
+THROTTLE_MAX = 0.5       # drive-time safety cap on throttle
+# Drive throttle is derived from predicted steering, not the model's throttle
+# head (keyboard capture makes those labels mostly 0/reverse):
+#   max(THROTTLE_MIN, DEFAULT_THROTTLE * (1 - THROTTLE_STEER_GAIN * |steering|))
+DEFAULT_THROTTLE = 0.35     # throttle on straights
+THROTTLE_MIN = 0.2          # forward floor: never stall or reverse
+THROTTLE_STEER_GAIN = 0.5   # how much to back off in corners
 
 # Pseudo-analog keyboard ramps (axis units per second)
 STEER_RATE = 3.0

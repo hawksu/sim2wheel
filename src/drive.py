@@ -1,11 +1,15 @@
-# src/drive.py — load model -> inference -> clamp -> step. Same preprocess as train.
+# src/drive.py — load model -> steering inference -> throttle from steering -> step.
+# Same preprocess as train.
 import tensorflow as tf
 import config
 from src.data.preprocess import preprocessImage
 
 
-def clampThrottle(throttle, maxThrottle=config.THROTTLE_MAX) -> float:
-	return float(max(-maxThrottle, min(maxThrottle, throttle)))
+def steeringThrottle(steering) -> float:
+	# Slow down in proportion to how hard we're turning; never below the
+	# forward floor, never above the safety cap.
+	throttle = config.DEFAULT_THROTTLE * (1.0 - config.THROTTLE_STEER_GAIN * abs(steering))
+	return float(min(config.THROTTLE_MAX, max(config.THROTTLE_MIN, throttle)))
 
 
 def predictAction(model, obs):
@@ -13,8 +17,9 @@ def predictAction(model, obs):
 	x = tf.expand_dims(x, 0)
 	# Use model() not model.predict() for low-latency single-frame inference
 	# (NFR5): predict() retraces per call and lags the ~20 Hz drive loop.
-	steering, throttle = model(x, training=False).numpy()[0]
-	return float(steering), clampThrottle(throttle)
+	# The model's throttle head is ignored: its labels are mostly 0/reverse.
+	steering = float(model(x, training=False).numpy()[0][0])
+	return steering, steeringThrottle(steering)
 
 
 def driveLoop(env, model, maxSteps=None) -> int:
