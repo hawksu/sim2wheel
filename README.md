@@ -4,7 +4,8 @@ A from-scratch behavioral-cloning pipeline that learns to drive the DonkeyCar
 simulator. `gym-donkeycar` is used only as the pipe to the sim; the data
 pipeline, CNN, training, and drive loop are ours.
 
-See `PLAN.md` for the full design and `docs/superpowers/plans/` for the
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pipeline fits
+together, `PLAN.md` for the full design and `docs/superpowers/plans/` for the
 implementation plan.
 
 ## Quickstart
